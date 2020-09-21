@@ -8,9 +8,8 @@ services:
     - .:/app
     - ./var/:/fogger
     environment:
-      SOURCE_DATABASE_URL: mysql://user:pass@source:3306/source
-      TARGET_DATABASE_URL: mysql://user:pass@target:3306/target
-      RABBITMQ_URL: amqp://user:pass@rabbit:5672
+      SOURCE_DATABASE_URL: postgresql://user:pass@source:5432/bitpesa_admin_development
+      TARGET_DATABASE_URL: postgresql://user:pass@target:5432/bitpesa_admin_development
       REDIS_URL: redis://redis
   worker:
     depends_on:
@@ -20,25 +19,24 @@ services:
     - .:/app
     - ./var/:/fogger
     environment:
-      SOURCE_DATABASE_URL: mysql://user:pass@source:3306/source
-      TARGET_DATABASE_URL: mysql://user:pass@target:3306/target
-      RABBITMQ_URL: amqp://user:pass@rabbit:5672
+      SOURCE_DATABASE_URL: postgresql://user:pass@source:5432/bitpesa_admin_development
+      TARGET_DATABASE_URL: postgresql://user:pass@target:5432/bitpesa_admin_development
       REDIS_URL: redis://redis
     restart: always
-    command: fogger:consumer
+    command: fogger:consumer --messages=200
   redis:
     image: redis:4
   source:
+    volumes:
+    - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
     environment:
-      MYSQL_DATABASE: source
-      MYSQL_PASSWORD: pass
-      MYSQL_ROOT_PASSWORD: pass
-      MYSQL_USER: user
-    image: mysql:5.7
+      POSTGRES_DB: source
+      POSTGRES_PASSWORD: pass
+      POSTGRES_USER: user
+    image: postgres
   target:
     environment:
-      MYSQL_DATABASE: target
-      MYSQL_PASSWORD: pass
-      MYSQL_ROOT_PASSWORD: pass
-      MYSQL_USER: user
-    image: mysql:5.7
+      POSTGRES_DB: bitpesa_admin_development
+      POSTGRES_PASSWORD: pass
+      POSTGRES_USER: user
+    image: postgres
