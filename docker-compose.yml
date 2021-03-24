@@ -8,8 +8,10 @@ services:
     - .:/app
     - ./var/:/fogger
     environment:
-      SOURCE_DATABASE_URL: postgresql://user:pass@source:5432/bitpesa_admin_development
-      TARGET_DATABASE_URL: postgresql://user:pass@target:5432/bitpesa_admin_development
+      # SOURCE_DATABASE_URL: postgresql://user1:pass@source:5432/bitpesa_api_development
+      # TARGET_DATABASE_URL: postgresql://user1:pass@target:5432/bitpesa_api_development
+      SOURCE_DATABASE_URL: postgresql://host.docker.internal:5432/bitpesa_api_development
+      TARGET_DATABASE_URL: postgresql://host.docker.internal:5432/testing
       REDIS_URL: redis://redis
   worker:
     depends_on:
@@ -19,24 +21,27 @@ services:
     - .:/app
     - ./var/:/fogger
     environment:
-      SOURCE_DATABASE_URL: postgresql://user:pass@source:5432/bitpesa_admin_development
-      TARGET_DATABASE_URL: postgresql://user:pass@target:5432/bitpesa_admin_development
+      # SOURCE_DATABASE_URL: postgresql://user1:pass@source:5432/bitpesa_api_development
+      # TARGET_DATABASE_URL: postgresql://user1:pass@target:5432/bitpesa_api_development
+      SOURCE_DATABASE_URL: postgresql://host.docker.internal:5432/bitpesa_api_development
+      TARGET_DATABASE_URL: postgresql://host.docker.internal:5432/testing
       REDIS_URL: redis://redis
     restart: always
     command: fogger:consumer --messages=200
   redis:
     image: redis:4
-  source:
-    volumes:
-    - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
-    environment:
-      POSTGRES_DB: source
-      POSTGRES_PASSWORD: pass
-      POSTGRES_USER: user
-    image: postgres
-  target:
-    environment:
-      POSTGRES_DB: bitpesa_admin_development
-      POSTGRES_PASSWORD: pass
-      POSTGRES_USER: user
-    image: postgres
+  # source:
+  #   volumes:
+  #   - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
+  #   environment:
+  #     POSTGRES_DB: source
+  #     # POSTGRES_DB: postgresql://host.docker.internal:5432/bitpesa_api_development
+  #     POSTGRES_PASSWORD: pass
+  #     POSTGRES_USER: user1
+  #   image: postgres
+  # target:
+  #   environment:
+  #     POSTGRES_DB: bitpesa_api_development
+  #     POSTGRES_PASSWORD: pass
+  #     POSTGRES_USER: user1
+  #   image: postgres

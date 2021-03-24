@@ -4,6 +4,8 @@ namespace App\Fogger\Schema;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema as DBAL;
+use Doctrine\DBAL\Types\Type;
+
 
 class SchemaManipulator
 {
@@ -15,8 +17,11 @@ class SchemaManipulator
 
     public function __construct(Connection $source, Connection $target)
     {
+        echo 11111;
         $this->sourceConnection = $source;
+        echo 22222;
         $this->sourceSchema = $source->getSchemaManager();
+        echo 33333;
         $this->targetSchema = $target->getSchemaManager();
     }
 
@@ -34,7 +39,21 @@ class SchemaManipulator
                 if ($column->getAutoincrement()) {
                     $auto_increments[] = clone $column;
                     $column->setAutoincrement(false);
-
+                }
+                if($column->getName() == "id") {
+                  echo $column->getType();
+                  if($column->getType() == 'Guid'){
+                    $column->setColumnDefinition("uuid DEFAULT uuid_generate_v4() NOT NULL");
+                    $column->setDefault(NULL);
+                  }
+                }
+                if( $column->getType() == 'Boolean') {
+                  $type = \Doctrine\DBAL\Types\Type::getType('string');
+                  $column->setType($type);
+                }
+                if( $column->getType() == 'String') {
+                  $type2 = \Doctrine\DBAL\Types\Type::getType('text');
+                  $column->setType($type2);
                 }
             }
             foreach ($table->getForeignKeys() as $fk) {

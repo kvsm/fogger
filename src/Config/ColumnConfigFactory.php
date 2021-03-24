@@ -11,6 +11,7 @@ class ColumnConfigFactory
 
     public function __construct(StrategyExtractor $extractor)
     {
+        echo 4444;
         $this->extractor = $extractor;
     }
 
