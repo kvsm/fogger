@@ -10,6 +10,8 @@ class RelationGroupsFactory
     private $sourceSchema;
     private $connection;
 
+    private $connection;
+
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
@@ -18,6 +20,9 @@ class RelationGroupsFactory
 
     public function createFromDBAL()
     {
+        $this->connection->getDatabasePlatform()->registerDoctrineTypeMapping('xml', 'string');
+        $this->connection->getDatabasePlatform()->registerDoctrineTypeMapping('_text', 'string');
+        
         $groups = new RelationsGroups();
         $this->connection->getDatabasePlatform()->registerDoctrineTypeMapping('xml', 'text');
         $this->connection->getDatabasePlatform()->registerDoctrineTypeMapping('_text', 'text');

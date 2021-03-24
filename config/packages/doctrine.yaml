@@ -28,6 +28,9 @@ doctrine:
                     charset: '%env(resolve:CHARSET)%'
                     collate: '%env(resolve:COLLATE)%'
                     !php/const PDO::MYSQL_ATTR_INIT_COMMAND: '%env(resolve:MYSQL_ATTR_INIT_COMMAND)%'
+                server_version: '13.0'
+                mapping_types:
+                    xml: string
             target:
                 options:
                     !php/const PDO::MYSQL_ATTR_LOCAL_INFILE: 1
@@ -35,3 +38,6 @@ doctrine:
                     collate: '%env(resolve:COLLATE)%'
                     !php/const PDO::MYSQL_ATTR_INIT_COMMAND: '%env(resolve:MYSQL_ATTR_INIT_COMMAND)%'
                 url: '%env(resolve:TARGET_DATABASE_URL)%'
+                server_version: '13.0'
+                mapping_types:
+                    xml: string

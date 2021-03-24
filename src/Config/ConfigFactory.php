@@ -15,15 +15,12 @@ class ConfigFactory
 
     public function __construct(Connection $connection, TableConfigFactory $tableConfigFactory)
     {
-
         $this->connection = $connection;
-        $this->sourceSchemaManager = $connection->getSchemaManager();
-        $this->tableConfigFactory = $tableConfigFactory;
+        
     }
 
     public function createFromDBAL()
     {
-        echo 12121212;
         $this->connection->getDatabasePlatform()->registerDoctrineTypeMapping('xml', 'array');
         $this->connection->getDatabasePlatform()->registerDoctrineTypeMapping('_text', 'array');
 

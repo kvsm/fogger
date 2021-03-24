@@ -41,19 +41,18 @@ class SchemaManipulator
                     $column->setAutoincrement(false);
                 }
                 if($column->getName() == "id") {
-                  echo $column->getType();
-                  if($column->getType() == 'Guid'){
-                    $column->setColumnDefinition("uuid DEFAULT uuid_generate_v4() NOT NULL");
-                    $column->setDefault(NULL);
-                  }
+                    if($column->getType() == 'Guid'){
+                        $column->setColumnDefinition("uuid DEFAULT uuid_generate_v4() NOT NULL");
+                        $column->setDefault(NULL);
+                    }
                 }
                 if( $column->getType() == 'Boolean') {
-                  $type = \Doctrine\DBAL\Types\Type::getType('string');
-                  $column->setType($type);
+                    $type = \Doctrine\DBAL\Types\Type::getType('string');
+                    $column->setType($type);
                 }
                 if( $column->getType() == 'String') {
-                  $type2 = \Doctrine\DBAL\Types\Type::getType('text');
-                  $column->setType($type2);
+                    $type2 = \Doctrine\DBAL\Types\Type::getType('text');
+                    $column->setType($type2);
                 }
             }
             foreach ($table->getForeignKeys() as $fk) {
