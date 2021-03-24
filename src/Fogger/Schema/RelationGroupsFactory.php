@@ -10,8 +10,6 @@ class RelationGroupsFactory
     private $sourceSchema;
     private $connection;
 
-    private $connection;
-
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
