@@ -17,11 +17,8 @@ class SchemaManipulator
 
     public function __construct(Connection $source, Connection $target)
     {
-        echo 11111;
         $this->sourceConnection = $source;
-        echo 22222;
         $this->sourceSchema = $source->getSchemaManager();
-        echo 33333;
         $this->targetSchema = $target->getSchemaManager();
     }
 

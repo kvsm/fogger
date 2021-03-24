@@ -16,7 +16,8 @@ class ConfigFactory
     public function __construct(Connection $connection, TableConfigFactory $tableConfigFactory)
     {
         $this->connection = $connection;
-        
+        $this->sourceSchemaManager = $connection->getSchemaManager();
+        $this->tableConfigFactory = $tableConfigFactory;
     }
 
     public function createFromDBAL()
