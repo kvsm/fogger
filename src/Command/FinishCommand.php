@@ -102,7 +102,7 @@ class FinishCommand extends Command
         $this->outputMessage('Data moved, constraints and indexes recreated.', $io, 'fg=black;bg=green');
 
         $output->writeln('Fixing column definitions...');
-        $columns = Yaml::parseFile('/fogger/columns.yaml');
+        $columnTypes = Yaml::parseFile('/fogger/columns.yaml');
 
         $target = $this->schemaManipulator->getTargetConnection();
         $host = $target->getHost();
@@ -113,7 +113,8 @@ class FinishCommand extends Command
         
         $conn = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
 
-        foreach ($columns['boolean'] as $table => $columns) {
+        $output->writeln("Booleans");
+        foreach ($columnTypes['boolean'] as $table => $columns) {
             $output->writeln("Table: $table");
             foreach ($columns as $column => $attrs) {
                 $output->writeln("Column: $column");
@@ -129,6 +130,44 @@ class FinishCommand extends Command
                     END,
                     ALTER COLUMN $column SET DEFAULT $defaultStr;
                 ");
+            }
+        }
+
+        $output->writeln("Strings");
+        foreach ($columnTypes['string'] as $table => $columns) {
+            $output->writeln("Table: $table");
+            foreach ($columns as $column => $attrs) {
+                $output->writeln("Column: $column");
+                $default = $attrs['default'];
+                $output->writeln("Default: $default");
+                if ($default == '{}') {
+                pg_query($conn, "
+                    ALTER TABLE $table
+                    ALTER COLUMN $column DROP DEFAULT,
+                    ALTER COLUMN $column TYPE character varying[] USING $column::character varying[],
+                    ALTER COLUMN $column SET DEFAULT '{}';
+                ");
+                }
+            }
+        }
+
+        $output->writeln("Texts");
+        foreach ($columnTypes['text'] as $table => $columns) {
+            $output->writeln("Table: $table");
+            foreach ($columns as $column => $attrs) {
+                if (!array_key_exists($column, $columnTypes['string'][$table])) {
+                    $output->writeln("Column: $column");
+                    $default = $attrs['default'];
+                    $output->writeln("Default: $default");
+                    if ($default == '{}') {
+                        pg_query($conn, "
+                            ALTER TABLE $table
+                            ALTER COLUMN $column DROP DEFAULT,
+                            ALTER COLUMN $column TYPE text[] USING $column::text[],
+                            ALTER COLUMN $column SET DEFAULT '{}';
+                        ");
+                    }
+                }
             }
         }
 

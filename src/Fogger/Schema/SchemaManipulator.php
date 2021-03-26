@@ -41,7 +41,9 @@ class SchemaManipulator
         $sourceTables = $this->sourceSchema->listTables();
         $columns = [
             'boolean' => [],
-            'string' => []
+            'string' => [],
+            'text' => [],
+            'datetime' => []
         ];
         /** @var DBAL\Table $table */
         foreach ($sourceTables as $table) {
@@ -71,6 +73,7 @@ class SchemaManipulator
                     $type = \Doctrine\DBAL\Types\Type::getType('string');
 -                   $column->setType($type);
                 }
+
                 if( $column->getType() == 'String') {
                     if(!array_key_exists($tableName, $columns['string'])) {
                         $columns['string'][$tableName] = [];
@@ -81,6 +84,26 @@ class SchemaManipulator
                     ];
                     $type2 = \Doctrine\DBAL\Types\Type::getType('text');
                     $column->setType($type2);
+                }
+
+                if( $column->getType() == 'Text') {
+                    if(!array_key_exists($tableName, $columns['text'])) {
+                        $columns['text'][$tableName] = [];
+                    }
+                    $columns['text'][$tableName][$columnName] = [
+                        'default' => $column->getDefault(),
+                        'notnull' => $column->getNotnull()
+                    ];
+                }
+
+                if( $column->getType() == 'DateTime') {
+                    if(!array_key_exists($tableName, $columns['datetime'])) {
+                        $columns['datetime'][$tableName] = [];
+                    }
+                    $columns['datetime'][$tableName][$columnName] = [
+                        'default' => $column->getDefault(),
+                        'notnull' => $column->getNotnull()
+                    ];
                 }
             }
             foreach ($table->getForeignKeys() as $fk) {
