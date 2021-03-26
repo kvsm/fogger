@@ -5,6 +5,7 @@ namespace App\Fogger\Schema;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema as DBAL;
 use Doctrine\DBAL\Types\Type;
+use Symfony\Component\Yaml\Yaml;
 
 
 class SchemaManipulator
@@ -13,13 +14,23 @@ class SchemaManipulator
 
     private $sourceConnection;
 
+    private $targetConnection;
+
     private $targetSchema;
 
     public function __construct(Connection $source, Connection $target)
     {
         $this->sourceConnection = $source;
+        $this->targetConnection = $target;
         $this->sourceSchema = $source->getSchemaManager();
         $this->targetSchema = $target->getSchemaManager();
+        $host = $target->getHost();
+        $port = $target->getPort();
+        $dbname = $target->getDatabase();
+        $user = $target->getUsername();
+        $password = $target->getPassword();
+        $conn = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
+        pg_query($conn, 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
     }
 
     /**
@@ -28,11 +39,17 @@ class SchemaManipulator
     public function copySchemaDroppingIndexesAndForeignKeys()
     {
         $sourceTables = $this->sourceSchema->listTables();
+        $columns = [
+            'boolean' => [],
+            'string' => []
+        ];
         /** @var DBAL\Table $table */
         foreach ($sourceTables as $table) {
             $primary = NULL;
             $auto_increments = NULL;
+            $tableName = $table->getName();
             foreach ($table->getColumns() as $column) {
+                $columnName = $column->getName();
                 if ($column->getAutoincrement()) {
                     $auto_increments[] = clone $column;
                     $column->setAutoincrement(false);
@@ -44,10 +61,24 @@ class SchemaManipulator
                     }
                 }
                 if( $column->getType() == 'Boolean') {
+                    if(!array_key_exists($tableName, $columns['boolean'])) {
+                        $columns['boolean'][$tableName] = [];
+                    }
+                    $columns['boolean'][$tableName][$columnName] = [
+                        'default' => $column->getDefault(),
+                        'notnull' => $column->getNotnull()
+                    ];
                     $type = \Doctrine\DBAL\Types\Type::getType('string');
-                    $column->setType($type);
+-                   $column->setType($type);
                 }
                 if( $column->getType() == 'String') {
+                    if(!array_key_exists($tableName, $columns['string'])) {
+                        $columns['string'][$tableName] = [];
+                    }
+                    $columns['string'][$tableName][$columnName] = [
+                        'default' => $column->getDefault(),
+                        'notnull' => $column->getNotnull()
+                    ];
                     $type2 = \Doctrine\DBAL\Types\Type::getType('text');
                     $column->setType($type2);
                 }
@@ -78,6 +109,8 @@ class SchemaManipulator
                 );
             }
         }
+        $yaml = Yaml::dump($columns);
+        file_put_contents('/fogger/columns.yaml', $yaml);
     }
 
     private function recreateIndexesOnTable(DBAL\Table $table)
@@ -128,5 +161,10 @@ class SchemaManipulator
         foreach ($sourceTables as $table) {
             $this->recreateForeignKeysOnTable($table);
         }
+    }
+
+    public function getTargetConnection()
+    {
+        return $this->targetConnection;
     }
 }

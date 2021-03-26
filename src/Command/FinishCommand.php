@@ -13,6 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Yaml\Yaml;
 
 class FinishCommand extends Command
 {
@@ -99,6 +100,37 @@ class FinishCommand extends Command
         }
 
         $this->outputMessage('Data moved, constraints and indexes recreated.', $io, 'fg=black;bg=green');
+
+        $output->writeln('Fixing column definitions...');
+        $columns = Yaml::parseFile('/fogger/columns.yaml');
+
+        $target = $this->schemaManipulator->getTargetConnection();
+        $host = $target->getHost();
+        $port = $target->getPort();
+        $dbname = $target->getDatabase();
+        $user = $target->getUsername();
+        $password = $target->getPassword();
+        
+        $conn = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
+
+        foreach ($columns['boolean'] as $table => $columns) {
+            $output->writeln("Table: $table");
+            foreach ($columns as $column => $attrs) {
+                $output->writeln("Column: $column");
+                $default = $attrs['default'];
+                $defaultStr = ($default == '1') ? "TRUE" : "FALSE";
+                $output->writeln("Default: $defaultStr");
+                pg_query($conn, "
+                    ALTER TABLE $table
+                    ALTER COLUMN $column DROP DEFAULT,
+                    ALTER COLUMN $column TYPE boolean USING
+                        CASE WHEN $column='' THEN FALSE
+                        ELSE TRUE
+                    END,
+                    ALTER COLUMN $column SET DEFAULT $defaultStr;
+                ");
+            }
+        }
 
         return 0;
     }
