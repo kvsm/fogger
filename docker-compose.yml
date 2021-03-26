@@ -10,7 +10,7 @@ services:
     environment:
       # SOURCE_DATABASE_URL: postgresql://user1:pass@source:5432/bitpesa_api_development
       # TARGET_DATABASE_URL: postgresql://user1:pass@target:5432/bitpesa_api_development
-      SOURCE_DATABASE_URL: postgresql://kevinsmith@host.docker.internal:5432/bitpesa_api_development
+      SOURCE_DATABASE_URL: postgresql://kevinsmith@host.docker.internal:5432/bitpesa_admin_development
       TARGET_DATABASE_URL: postgresql://kevinsmith@host.docker.internal:5432/testing
       REDIS_URL: redis://redis
   worker:
@@ -23,7 +23,7 @@ services:
     environment:
       # SOURCE_DATABASE_URL: postgresql://user1:pass@source:5432/bitpesa_api_development
       # TARGET_DATABASE_URL: postgresql://user1:pass@target:5432/bitpesa_api_development
-      SOURCE_DATABASE_URL: postgresql://kevinsmith@host.docker.internal:5432/bitpesa_api_development
+      SOURCE_DATABASE_URL: postgresql://kevinsmith@host.docker.internal:5432/bitpesa_admin_development
       TARGET_DATABASE_URL: postgresql://kevinsmith@host.docker.internal:5432/testing
       REDIS_URL: redis://redis
     restart: always

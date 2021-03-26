@@ -113,14 +113,10 @@ class FinishCommand extends Command
         
         $conn = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
 
-        $output->writeln("Booleans");
         foreach ($columnTypes['boolean'] as $table => $columns) {
-            $output->writeln("Table: $table");
             foreach ($columns as $column => $attrs) {
-                $output->writeln("Column: $column");
                 $default = $attrs['default'];
                 $defaultStr = ($default == '1') ? "TRUE" : "FALSE";
-                $output->writeln("Default: $defaultStr");
                 pg_query($conn, "
                     ALTER TABLE $table
                     ALTER COLUMN $column DROP DEFAULT,
@@ -133,13 +129,9 @@ class FinishCommand extends Command
             }
         }
 
-        $output->writeln("Strings");
         foreach ($columnTypes['string'] as $table => $columns) {
-            $output->writeln("Table: $table");
             foreach ($columns as $column => $attrs) {
-                $output->writeln("Column: $column");
                 $default = $attrs['default'];
-                $output->writeln("Default: $default");
                 if ($default == '{}') {
                 pg_query($conn, "
                     ALTER TABLE $table
@@ -151,14 +143,10 @@ class FinishCommand extends Command
             }
         }
 
-        $output->writeln("Texts");
         foreach ($columnTypes['text'] as $table => $columns) {
-            $output->writeln("Table: $table");
             foreach ($columns as $column => $attrs) {
                 if (!array_key_exists($column, $columnTypes['string'][$table])) {
-                    $output->writeln("Column: $column");
                     $default = $attrs['default'];
-                    $output->writeln("Default: $default");
                     if ($default == '{}') {
                         pg_query($conn, "
                             ALTER TABLE $table
@@ -168,6 +156,17 @@ class FinishCommand extends Command
                         ");
                     }
                 }
+            }
+        }
+
+        foreach ($columnTypes['datetime'] as $table => $columns) {
+            foreach ($columns as $column => $attrs) {
+                $default = $attrs['default'];
+                pg_query($conn, "
+                    ALTER TABLE $table
+                    ALTER COLUMN $column DROP DEFAULT,
+                    ALTER COLUMN $column TYPE timestamp without time zone;
+                ");
             }
         }
 
